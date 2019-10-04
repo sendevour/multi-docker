@@ -1,0 +1,22 @@
+sudo: required
+services: 
+  - docker
+# build the test image(s) here client
+before_install:
+  - docker build -t sendevour/react-test -f ./client/Dockerfile.dev ./client
+# test by running the command
+script: 
+  - docker run -e CI = true sendevour/react-test npm run test -- --coverage
+# after successful tests, build all the production images
+after_success:
+  - docker build -t sendevour/multi-client ./client
+  - docker build -t sendevour/multi-nginx ./nginx
+  - docker build -t sendevour/multi-server ./server
+  - docker build -t sendevour/multi-worker ./worker
+  # login to docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # push the prod images to the docker hub. all the tags from previous prod build section
+  - docker push sendevour/multi-client
+  - docker push sendevour/multi-nginx
+  - docker push sendevour/multi-server
+  - docker push sendevour/multi-worker
