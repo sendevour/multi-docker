@@ -1,0 +1,7 @@
+FROM node:alpine
+WORKDIR '/app'
+COPY ./package.json ./
+RUN npm install
+COPY . .
+#here instead of npm run start, we are using npm run dev so that, nodemon can live reload the changes.
+CMD ["npm", "run", "dev"]

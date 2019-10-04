@@ -1,0 +1,59 @@
+version: "3"
+services:
+  postgres:
+    image: 'postgres:latest'
+  redis:
+    image: 'redis:latest'
+  nginx:
+    # on any issue we want nginx to restart.
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      # localmachine's any / 3050 to nginx's 80
+      - '3050:80'
+  # the below line is changed to api.
+  # coz, for nginx "server" is a keyword and to make it to refer to express server would cause issues.
+  #server:
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      #look for the dockerfile at the server folder.
+      context: ./server
+    volumes:
+      #do not map node_modules
+      - /app/node_modules
+      - ./server:/app
+    environment:
+      # this is the name of the service we mention above
+      - REDIS_HOST=redis
+      # this port can be obtained from redis's docker hub page.
+      - REDIS_PORT=6379
+      # these can be obtained from postgres's docker hub page.
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      #look for the dockerfile at the client folder.
+      context: ./client
+    volumes:
+      #do not map node_modules
+      - /app/node_modules
+      - ./client:/app
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      #look for the dockerfile at the worker folder.
+      context: ./worker
+    volumes:
+      #do not map node_modules
+      - /app/node_modules
+      - ./worker:/app
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
