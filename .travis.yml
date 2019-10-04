@@ -6,7 +6,7 @@ before_install:
   - docker build -t sendevour/react-test -f ./client/Dockerfile.dev ./client
 # test by running the command
 script: 
-  - docker run -e CI = true sendevour/react-test npm run test -- --coverage
+  - docker run -e CI=true sendevour/react-test npm run test -- --coverage
 # after successful tests, build all the production images
 after_success:
   - docker build -t sendevour/multi-client ./client
